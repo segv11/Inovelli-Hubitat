@@ -103,7 +103,7 @@ import groovy.json.JsonOutput
 @Field static Map ledIntensityOffEndpoints = [104:7]
  
 metadata {
-    definition (name: "Inovelli Switch Red Series LZW30-SN", namespace: "InovelliUSA", author: "Eric Maycock", vid: "generic-switch", importUrl: "https://raw.githubusercontent.com/InovelliUSA/Hubitat/master/Drivers/inovelli-switch-red-series-lzw30-sn.src/inovelli-switch-red-series-lzw30-sn.groovy") {
+    definition (name: "Inovelli Switch Red Series LZW30-SN (segv11)", namespace: "InovelliUSA", author: "Eric Maycock", vid: "generic-switch", importUrl: "https://raw.githubusercontent.com/InovelliUSA/Hubitat/master/Drivers/inovelli-switch-red-series-lzw30-sn.src/inovelli-switch-red-series-lzw30-sn.groovy") {
         capability "Switch"
         capability "Refresh"
         capability "Actuator"
@@ -118,6 +118,13 @@ metadata {
         attribute "lastEvent", "String"
         attribute "firmware", "String"
         attribute "groups", "Number"
+        /*** segv11 meterExtra */
+        attribute "energyTime" , "Number"
+        attribute "energyDuration" , "String"
+        attribute "powerHigh", "Number"
+        attribute "powerLow", "Number"
+        /* segv11 meterExtra ***/
+
         
         // Uncomment these lines if you would like to test your scenes with digital button presses.
         /*
@@ -495,14 +502,14 @@ def generate_preferences()
     input "disableLocal", "enum", title: "Disable Local Control", description: "\nDisable ability to control switch from the wall", required: false, options:[["1": "Yes"], ["0": "No"]], defaultValue: "0"
     input "disableRemote", "enum", title: "Disable Remote Control", description: "\nDisable ability to control switch from inside Hubitat", required: false, options:[["1": "Yes"], ["0": "No"]], defaultValue: "0"
     input description: "Use the below options to enable child devices for the specified settings. This will allow you to adjust these settings using Apps such as Rule Machine.", title: "Child Devices", displayDuringSetup: false, type: "paragraph", element: "paragraph"
-    input "enableLEDChild", "bool", title: "Create \"LED Color\" Child Device", description: "", required: false, defaultValue: true
-    input "enableLED1OffChild", "bool", title: "Create \"LED When Off\" Child Device", description: "", required: false, defaultValue: false
+    input "enableLEDChild", "bool", title: "Create \"LED Color\" Child Device", description: "", required: false, defaultValue: false                                                           // segv11: was true
     input "enableDisableLocalChild", "bool", title: "Create \"Disable Local Control\" Child Device", description: "", required: false, defaultValue: false
     input "enableDisableRemoteChild", "bool", title: "Create \"Disable Remote Control\" Child Device", description: "", required: false, defaultValue: false
     input name: "debugEnable", type: "bool", title: "Enable debug logging", defaultValue: true
     input name: "infoEnable", type: "bool", title: "Enable informational logging", defaultValue: true
-    input name: "disableDebugLogging", type: "number", title: "Disable Debug Logging", description: "Disable debug logging after this number of minutes (0=Do not disable)", defaultValue: 0
-    input name: "disableInfoLogging", type: "number", title: "Disable Info Logging", description: "Disable info logging after this number of minutes (0=Do not disable)", defaultValue: 30
+    input name: "disableDebugLogging", type: "number", title: "Disable Debug Logging", description: "Disable debug logging after this number of minutes (0=Do not disable)", defaultValue: 1440 // segv11: was 0
+    input name: "disableInfoLogging", type: "number", title: "Disable Info Logging", description: "Disable info logging after this number of minutes (0=Do not disable)", defaultValue: 1440    // segv11: was 30
+    input name: "renameChildren", type: "bool", title: "Rename Child Devices on Reconfiguration", defaultValue: true                                                                            // segv11: NEW
 }
 
 private channelNumber(String dni) {
@@ -774,7 +781,7 @@ def initialize() {
         }
     }
     
-    if (device.label != state.oldLabel) {
+    if (device.label != state.oldLabel && renameChildren) {                               // segv11: NEW -- I don't like the renaming
         def children = childDevices
         def childDevice = children.find{it.deviceNetworkId.endsWith("ep1")}
         if (childDevice)
@@ -980,6 +987,13 @@ def zwaveEvent(hubitat.zwave.commands.meterv3.MeterReport cmd) {
         } else if (cmd.meterType == 1) {
         	event = createEvent(name: "energy", value: cmd.scaledMeterValue, unit: "kWh")
             if (infoEnable) log.info "${device.label?device.label:device.name}: Energy report received with value of ${cmd.scaledMeterValue} kWh"
+            /*** segv11 meterExtra */
+            if (device.currentValue("energyTime")) {
+                long energyTime = device.currentValue("energyTime").toLong()
+                def energyDuration = TimeCategory.minus(new Date(), new Date(energyTime)).toString()
+                sendEvent(name: "energyDuration", value: (energyDuration.toString()), displayed:false)
+            }
+            /* segv11 meterExtra ***/
         }
 	} else if (cmd.scale == 1) {
 		event = createEvent(name: "amperage", value: cmd.scaledMeterValue, unit: "A")
@@ -987,6 +1001,31 @@ def zwaveEvent(hubitat.zwave.commands.meterv3.MeterReport cmd) {
 	} else if (cmd.scale == 2) {
 		event = createEvent(name: "power", value: Math.round(cmd.scaledMeterValue), unit: "W")
         if (infoEnable) log.info "${device.label?device.label:device.name}: Power report received with value of ${cmd.scaledMeterValue} W"
+        /*** segv11 meterExtra */
+        Double powerHigh, powerLow;
+        try {
+            powerHigh = device.currentValue("powerHigh").toDouble()
+            if (infoEnable) log.info "old powerHigh: $powerHigh W"
+            powerHigh = Math.max(powerHigh, cmd.scaledMeterValue)
+            if (infoEnable) log.info "new powerHigh: $powerHigh W"
+             if (powerHigh < 0) powerHigh = 0/0
+       } catch(Exception ex) {
+            powerHigh = cmd.scaledMeterValue
+            if (infoEnable) log.info "no old powerHigh; new powerHigh: $powerHigh W"
+       }
+       try {
+            powerLow = device.currentValue("powerLow").toDouble()
+            if (infoEnable) log.info "old powerLow: $powerLow W"
+            powerLow = Math.min(powerLow, cmd.scaledMeterValue)
+            if (infoEnable) log.info "new powerLow: $powerLow W"
+            if (powerLow < 0) powerLow = 0/0
+       } catch(Exception ex) {
+            powerLow = cmd.scaledMeterValue
+            if (infoEnable) log.info "no old powerLow; new powerLow: $powerLow W"
+       }
+       sendEvent(name:"powerHigh", value: Math.round(powerHigh), unit: "W"); /* meterExtra2 */
+       sendEvent(name:"powerLow", value: Math.round(powerLow),  unit: "W");  /* meterExtra2 */
+       /* segv11 meterExtra ***/
 	}
 
     return event
@@ -1171,6 +1210,11 @@ def zwaveEvent(hubitat.zwave.Command cmd) {
 
 def reset() {
     if (infoEnable) log.info "${device.label?device.label:device.name}: Resetting energy statistics"
+    /*** segv11 meterExtra */
+    sendEvent(name:"energyTime",  value: new Date().getTime(), displayed:false)
+    sendEvent(name:"powerHigh", value: -1, displayed: false);
+    sendEvent(name:"powerLow", value: -1, displayed: false);
+    /* segv11 meterExtra ***/
 	def cmds = []
     cmds << zwave.meterV2.meterReset()
     cmds << zwave.meterV2.meterGet(scale: 0)

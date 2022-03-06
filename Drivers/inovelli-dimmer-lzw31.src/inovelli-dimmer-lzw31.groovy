@@ -106,13 +106,13 @@ import groovy.json.JsonOutput
 @Field static Map ledIntensityOffEndpoints = [104:15]
  
 metadata {
-    definition (name: "Inovelli Dimmer LZW31", namespace: "InovelliUSA", author: "Eric Maycock", vid: "generic-dimmer", importUrl:"https://raw.githubusercontent.com/InovelliUSA/Hubitat/master/Drivers/inovelli-dimmer-lzw31.src/inovelli-dimmer-lzw31.groovy") {
+    definition (name: "Inovelli Dimmer LZW31 (segv11)", namespace: "InovelliUSA", author: "Eric Maycock", vid: "generic-dimmer", importUrl:"https://raw.githubusercontent.com/InovelliUSA/Hubitat/master/Drivers/inovelli-dimmer-lzw31.src/inovelli-dimmer-lzw31.groovy") {
         capability "Switch"
         capability "Refresh"
         capability "Polling"
         capability "Actuator"
         capability "Sensor"
-        capability "Switch Level"
+        capability "Switch Level"             // segv11: Note that duration can go up to about 2 hours (127 minutes, or 7620 seconds)
         capability "Configuration"
         capability "ChangeLevel"
         capability "PushableButton"
@@ -191,7 +191,7 @@ def generate_preferences()
     input "disableLocal", "enum", title: "Disable Local Control", description: "\nDisable ability to control switch from the wall", required: false, options:[["1": "Yes"], ["0": "No"]], defaultValue: "0"
     input "disableRemote", "enum", title: "Disable Remote Control", description: "\nDisable ability to control switch from inside Hubitat", required: false, options:[["1": "Yes"], ["0": "No"]], defaultValue: "0"
     input description: "Use the below options to enable child devices for the specified settings. This will allow you to adjust these settings using Apps such as Rule Machine.", title: "Child Devices", displayDuringSetup: false, type: "paragraph", element: "paragraph"
-    input "enableLEDChild", "bool", title: "Create \"LED Color\" Child Device", description: "", required: false, defaultValue: true
+    input "enableLEDChild", "bool", title: "Create \"LED Color\" Child Device", description: "", required: false, defaultValue: false                                                           // segv11: was true
     input "enableLED1OffChild", "bool", title: "Create \"LED When Off\" Child Device", description: "", required: false, defaultValue: false
     input "enableDisableLocalChild", "bool", title: "Create \"Disable Local Control\" Child Device", description: "", required: false, defaultValue: false
     input "enableDisableRemoteChild", "bool", title: "Create \"Disable Remote Control\" Child Device", description: "", required: false, defaultValue: false
@@ -199,8 +199,9 @@ def generate_preferences()
     input "enableDefaultZWaveChild", "bool", title: "Create \"Default Level (Z-Wave)\" Child Device", description: "", required: false, defaultValue: false
     input name: "debugEnable", type: "bool", title: "Enable debug logging", defaultValue: true
     input name: "infoEnable", type: "bool", title: "Enable informational logging", defaultValue: true
-    input name: "disableDebugLogging", type: "number", title: "Disable Debug Logging", description: "Disable debug logging after this number of minutes (0=Do not disable)", defaultValue: 0
-    input name: "disableInfoLogging", type: "number", title: "Disable Info Logging", description: "Disable info logging after this number of minutes (0=Do not disable)", defaultValue: 30
+    input name: "disableDebugLogging", type: "number", title: "Disable Debug Logging", description: "Disable debug logging after this number of minutes (0=Do not disable)", defaultValue: 1440 // segv11: was 0
+    input name: "disableInfoLogging", type: "number", title: "Disable Info Logging", description: "Disable info logging after this number of minutes (0=Do not disable)", defaultValue: 1440    // segv11: was 30
+    input name: "renameChildren", type: "bool", title: "Rename Child Devices on Reconfiguration", defaultValue: true                                                                            // segv11: NEW
 }
 
 private channelNumber(String dni) {
@@ -466,7 +467,7 @@ def initialize() {
     if (enableLED1OffChild) addChild("ep104", "LED - When Off", "hubitat", "Generic Component Dimmer", false)
     else deleteChild("ep104")
     
-    if (device.label != state.oldLabel) {
+    if (device.label != state.oldLabel && renameChildren) {                               // segv11: NEW -- I don't like the renaming
         def children = childDevices
         def childDevice = children.find{it.deviceNetworkId.endsWith("ep1")}
         if (childDevice)
@@ -943,7 +944,7 @@ def setLevel(value) {
     ])
 }
 
-def setLevel(value, duration) {
+def setLevel(value, duration) {                        // segv11: Note that duration can go up to about 2 hours (127 minutes, or 7620 seconds)
     if (infoEnable) log.info "${device.label?device.label:device.name}: setLevel($value, $duration)"
     state.lastRan = now()
     def dimmingDuration = duration < 128 ? duration : 128 + Math.round(duration / 60)
