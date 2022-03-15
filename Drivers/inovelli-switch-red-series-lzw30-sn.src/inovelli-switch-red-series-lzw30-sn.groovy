@@ -1,5 +1,5 @@
 /**
- *  Inovelli Switch Red Series
+ *  Inovelli Switch Red Series LZW30-SN (segv11-additions)
  *  Author: Eric Maycock (erocm123)
  *  Date: 2022-02-03
  *
@@ -103,7 +103,7 @@ import groovy.json.JsonOutput
 @Field static Map ledIntensityOffEndpoints = [104:7]
  
 metadata {
-    definition (name: "Inovelli Switch Red Series LZW30-SN (segv11)", namespace: "InovelliUSA", author: "Eric Maycock", vid: "generic-switch", importUrl: "https://raw.githubusercontent.com/InovelliUSA/Hubitat/master/Drivers/inovelli-switch-red-series-lzw30-sn.src/inovelli-switch-red-series-lzw30-sn.groovy") {
+    definition (name: "Inovelli Switch Red Series LZW30-SN (segv11)", namespace: "InovelliUSA", author: "Eric Maycock", vid: "generic-switch", importUrl: "https://raw.githubusercontent.com/segv11/Inovelli-Hubitat/segv11-additions/Drivers/inovelli-switch-red-series-lzw30-sn.src/inovelli-switch-red-series-lzw30-sn.groovy") {
         capability "Switch"
         capability "Refresh"
         capability "Actuator"

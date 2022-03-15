@@ -1,5 +1,5 @@
 /**
- *  Inovelli Dimmer LZW31
+ *  Inovelli Dimmer LZW31 (segv11-additions)
  *  Author: Eric Maycock (erocm123)
  *  Date: 2022-02-03
  *
@@ -106,7 +106,7 @@ import groovy.json.JsonOutput
 @Field static Map ledIntensityOffEndpoints = [104:15]
  
 metadata {
-    definition (name: "Inovelli Dimmer LZW31 (segv11)", namespace: "InovelliUSA", author: "Eric Maycock", vid: "generic-dimmer", importUrl:"https://raw.githubusercontent.com/InovelliUSA/Hubitat/master/Drivers/inovelli-dimmer-lzw31.src/inovelli-dimmer-lzw31.groovy") {
+    definition (name: "Inovelli Dimmer LZW31 (segv11)", namespace: "InovelliUSA", author: "Eric Maycock", vid: "generic-dimmer", importUrl:"https://raw.githubusercontent.com/segv11/Inovelli-Hubitat/segv11-additions/Drivers/inovelli-dimmer-lzw31.src/inovelli-dimmer-lzw31.groovy") {
         capability "Switch"
         capability "Refresh"
         capability "Polling"
