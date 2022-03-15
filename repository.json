@@ -1,13 +1,13 @@
 {
-   "author": "Inovelli USA",
+   "author": "Inovelli USA (segv11-additions to drivers)",
    "gitHubUrl": "https://github.com/InovelliUSA/Hubitat",
    "payPalUrl": "",
    "packages": [
    	{
-   		"name": "Inovelli Drivers (Gen 2)",
+   		"name": "Inovelli Drivers (Gen 2) (segv11-additions)",
    		"category": "Control",
-   		"location": "https://raw.githubusercontent.com/InovelliUSA/Hubitat/master/Drivers/driversG2.json",
-   		"description": "Drivers provided by Inovelli"
+   		"location": "https://raw.githubusercontent.com/segv11/Inovelli-Hubitat/segv11-additions/Drivers/driversG2.json",
+   		"description": "Drivers provided by Inovelli (segv11-additions)"
    	},
       {
    		"name": "Z-Wave Association Tool",
