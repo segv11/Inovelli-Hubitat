@@ -1,7 +1,7 @@
 {
    "packageName": "Inovelli Drivers (Gen 2) (segv11-additions)",
    "minimumHEVersion": "2.1.9",
-   "author": "Eric Maycock",
+   "author": "Eric Maycock (segv11-additions)",
    "version": "20.4.30",
    "dateReleased": "2020-04-30",
    "releaseNotes": "Merge segv11 additions",
