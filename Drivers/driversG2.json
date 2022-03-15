@@ -1,10 +1,10 @@
 {
-   "packageName": "Inovelli Drivers (Gen 2)",
+   "packageName": "Inovelli Drivers (Gen 2) (segv11-additions)",
    "minimumHEVersion": "2.1.9",
    "author": "Eric Maycock",
    "version": "20.4.30",
    "dateReleased": "2020-04-30",
-   "releaseNotes": "LZW30-SN/LZW31-SN/LZW30/LZW31: Fixing bug when LED color gets stuck on custom value.",
+   "releaseNotes": "Merge segv11 additions",
    "drivers" : [
    	{
    		"id" : "405b5e34-073e-4dfa-af65-3b8da1a9fc66",
