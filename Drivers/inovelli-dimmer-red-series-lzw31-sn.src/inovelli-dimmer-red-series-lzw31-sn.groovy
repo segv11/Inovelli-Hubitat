@@ -1,5 +1,5 @@
 /**
- *  Inovelli Dimmer Red Series LZW31-SN
+ *  Inovelli Dimmer Red Series LZW31-SN (segv11-additions)
  *  Author: Eric Maycock (erocm123)
  *  Date: 2021-12-29
  *
@@ -124,7 +124,7 @@ import groovy.time.TimeCategory // segv11 meterExtra
 @Field static Map ledIntensityOffEndpoints = [104:15]
  
 metadata {
-    definition (name: "Inovelli Dimmer Red Series LZW31-SN (segv11)", namespace: "InovelliUSA", author: "Eric Maycock", vid: "generic-dimmer", importUrl:"https://raw.githubusercontent.com/InovelliUSA/Hubitat/master/Drivers/inovelli-dimmer-red-series-lzw31-sn.src/inovelli-dimmer-red-series-lzw31-sn.groovy") {
+    definition (name: "Inovelli Dimmer Red Series LZW31-SN (segv11)", namespace: "InovelliUSA", author: "Eric Maycock", vid: "generic-dimmer", importUrl:"https://raw.githubusercontent.com/segv11/Inovelli-Hubitat/segv11-additions/Drivers/inovelli-dimmer-red-series-lzw31-sn.src/inovelli-dimmer-red-series-lzw31-sn.groovy") {
         capability "Switch"
         capability "Refresh"
         capability "Polling"
