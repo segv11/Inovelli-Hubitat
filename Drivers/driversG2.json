@@ -1,5 +1,5 @@
 {
-   "packageName": "Inovelli Drivers (Gen 2)",
+   "packageName": "Inovelli Drivers (Gen 2) (segv11-additions)",
    "minimumHEVersion": "2.1.9",
    "author": "Eric Maycock",
    "version": "20.4.30",
