@@ -96,6 +96,7 @@
 
 import groovy.transform.Field
 import groovy.json.JsonOutput
+import groovy.time.TimeCategory // segv11 meterExtra
 
 @Field static List ledNotificationEndpoints = [8]
 @Field static Map ledColorEndpoints = [103:5]
